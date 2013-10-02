@@ -115,7 +115,7 @@ class OsmApi:
         self._api = api
 
         # Get created_by
-        if not appid:
+        if appid is None:
             self._created_by = created_by
         else:
             self._created_by = appid + " (" + created_by + ")"
@@ -164,7 +164,7 @@ class OsmApi:
         uri = "/api/0.6/node/"+str(NodeId)
         if NodeVersion <> -1: uri += "/"+str(NodeVersion)
         data = self._get(uri)
-        if not data: return data
+        if data is None: return data
         data = xml.dom.minidom.parseString(data)
         data = data.getElementsByTagName("osm")[0].getElementsByTagName("node")[0]
         return self._DomParseNode(data)
@@ -234,7 +234,7 @@ class OsmApi:
         uri = "/api/0.6/way/"+str(WayId)
         if WayVersion <> -1: uri += "/"+str(WayVersion)
         data = self._get(uri)
-        if not data: return data
+        if data is None: return data
         data = xml.dom.minidom.parseString(data)
         data = data.getElementsByTagName("osm")[0].getElementsByTagName("way")[0]
         return self._DomParseWay(data)
@@ -299,7 +299,7 @@ class OsmApi:
         uri = "/api/0.6/relation/"+str(RelationId)
         if RelationVersion <> -1: uri += "/"+str(RelationVersion)
         data = self._get(uri)
-        if not data: return data
+        if data is None: return data
         data = xml.dom.minidom.parseString(data)
         data = data.getElementsByTagName("osm")[0].getElementsByTagName("relation")[0]
         return self._DomParseRelation(data)
@@ -405,7 +405,7 @@ class OsmApi:
     
     def ChangesetClose(self):
         """ Closes current changeset. Returns #ChangesetId. """
-        if not self._CurrentChangesetId:
+        if self._CurrentChangesetId is None:
             raise Exception, "No changeset currently opened"
         result = self._put("/api/0.6/changeset/"+str(self._CurrentChangesetId)+"/close", u"")
         CurrentChangesetId = self._CurrentChangesetId
@@ -457,7 +457,7 @@ class OsmApi:
         if closed_after and not created_before:
             params["time"] = closed_after
         if created_before:
-            if not closed_after:
+            if closed_after is None:
                 closed_after = "1970-01-01T00:00:00Z"
             params["time"] = closed_after + "," + created_before
         if only_open:
@@ -534,7 +534,7 @@ class OsmApi:
             return self._do_manu(action, OsmType, OsmData)
             
     def _do_manu(self, action, OsmType, OsmData):        
-        if not self._CurrentChangesetId:
+        if self._CurrentChangesetId is None:
             raise Exception, "You need to open a changeset before uploading data"
         if u"timestamp" in OsmData:
             OsmData.pop(u"timestamp")
