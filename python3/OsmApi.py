@@ -39,7 +39,7 @@ class ApiError(Exception):
         self.payload = payload
     
     def __str__(self):
-        return "Request failed: " + str(self.status) + " - " + self.reason + " - " + self.payload
+        return "Request failed: " + str(self.status) + " - " + str(self.reason)
 
 ###########################################################################
 ## Main class                                                            ##
@@ -362,7 +362,7 @@ class OsmApi:
     
     def ChangesetUpdate(self, ChangesetTags = {}):
         """ Updates current changeset with ChangesetTags. """
-        if self._CurrentChangesetId == -1:
+        if self._CurrentChangesetId == 0:
             raise Exception("No changeset currently opened")
         if "created_by" not in ChangesetTags:
             ChangesetTags["created_by"] = self._created_by
@@ -381,7 +381,7 @@ class OsmApi:
     
     def ChangesetClose(self):
         """ Closes current changeset. Returns #ChangesetId. """
-        if self._CurrentChangesetId is None:
+        if self._CurrentChangesetId == 0:
             raise Exception("No changeset currently opened")
         result = self._put("/api/0.6/changeset/"+str(self._CurrentChangesetId)+"/close", "")
         CurrentChangesetId = self._CurrentChangesetId
@@ -509,8 +509,8 @@ class OsmApi:
         else:
             return self._do_manu(action, OsmType, OsmData)
             
-    def _do_manu(self, action, OsmType, OsmData):        
-        if self._CurrentChangesetId is None:
+    def _do_manu(self, action, OsmType, OsmData):
+        if self._CurrentChangesetId == 0:
             raise Exception("You need to open a changeset before uploading data")
         if "timestamp" in OsmData:
             OsmData.pop("timestamp")
@@ -559,7 +559,7 @@ class OsmApi:
         self._conn.putrequest(cmd, path)
         self._conn.putheader('User-Agent', self._created_by)
         if auth:
-            self._conn.putheader('Authorization', 'Basic ' + base64.encodestring(self._username + ':' + self._password).strip())
+            self._conn.putheader('Authorization', 'Basic ' + base64.b64encode(bytes(self._username + ':' + self._password, encoding='utf8')).decode(encoding='UTF-8').strip())
         if send is not None:
             self._conn.putheader('Content-Length', len(send))
         self._conn.endheaders()
